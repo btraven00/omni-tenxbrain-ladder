@@ -1,4 +1,4 @@
-# The TENx cell-count ladder, built as a benchmark of its own.
+# The TENx brain cell-count ladder, built as a benchmark of its own.
 #
 #   RAW     omni-data fetches EH1039 (TENxBrainData, 1.3M E18 mouse brain
 #           cells, 10x HDF5) once, checksum-verified.
@@ -6,8 +6,8 @@
 #           (omni-scsampler) streamed into a DATA-contract h5ad.
 #
 # The rungs are the product, not a measurement: each output directory is
-# publishable as-is, and downstream benchmarks consume it with omni-data over
-# file:// (see README).
+# publishable as-is, and downstream benchmarks consume it with omni-data 
+# (see README).
 name: tenxbrain-ladder
 id: tenxbrain_ladder
 description: >
@@ -29,31 +29,27 @@ software_environments:
   omni_data:
     name: omni-data (hapiq) downloader
     conda: envs/omni-data.yml
-  tenx_ladder:
+  tenxbrain_ladder:
     name: h5py/numpy + omni-scsampler
-    conda: envs/tenx-ladder.yml
+    conda: envs/tenxbrain-ladder.yml
 
 # Anchor, not a schema key -- omnibenchmark ignores unknown top-level keys.
 # Every rung is the same module at a different n, so the body is written once.
 rung_module: &rung
-  software_environment: tenx_ladder
+  software_environment: tenxbrain_ladder
   repository:
-    # TEMPORARY local checkout -- restore before pushing:
-    #   url: https://github.com/btraven00/omni-tenxbrain-ladder
-    #   commit: main
-    url: /home/b/lab/omni-scrna/split-stages-plan-modules/omni-tenxbrain-ladder
-    commit: main
+     url: https://github.com/btraven00/omni-tenxbrain-ladder
+     commit: main
 
 stages:
   - id: RAW
     outputs:
-      - id: tenx_raw_h5
+      - id: tenxbrain_raw_h5
         path: "{dataset}.h5"
     modules:
-      # The dataset id stamps every output path, so it names the dataset
-      # (Bioconductor TENxBrainData) rather than the vendor. The rungs keep
-      # their "tenx-" stems: they are already the module ids downstream
-      # benchmarks and collected runs refer to.
+      # The dataset id stamps every output path, and the rung ids become the
+      # published file stems, so both name the dataset (Bioconductor
+      # TENxBrainData).
       - id: tenxbrain
         name: "TENxBrainData 1.3M E18 mouse brain (EH1039)"
         software_environment: omni_data
@@ -72,10 +68,10 @@ stages:
 
   - id: LADDER
     inputs:
-      - tenx_raw_h5
-    # The trailing "{dataset}/" is load-bearing: omnibenchmark prefixes any
+      - tenxbrain_raw_h5
+    # The trailing "{dataset}/" is important: omnibenchmark prefixes any
     # output filename that lacks {dataset} with "{dataset}.", which would stamp
-    # the rungs "tenxbrain.tenx-0005k.h5ad". Spending {dataset} on the directory
+    # the rungs "tenxbrain.tenxbrain-0005k.h5ad". Spending {dataset} on the directory
     # instead leaves each rung dir holding exactly the four files a DATA module
     # publishes, stemmed by the rung id.
     outputs:
@@ -95,60 +91,59 @@ stages:
       # NOTE: no cell-type labels exist for this dataset -- the truth files are
       # emitted header-only on purpose. Any metric stage that consumes them is
       # invalid downstream of this ladder.
-      - id: tenx-0005k
+      - id: tenxbrain-0005k
         name: "TENx ladder: 5k cells"
         <<: *rung
         parameters:
           - n_cells: 5000
             seed: 42
-      - id: tenx-0010k
+      - id: tenxbrain-0010k
         name: "TENx ladder: 10k cells"
         <<: *rung
         parameters:
           - n_cells: 10000
             seed: 42
-      - id: tenx-0020k
+      - id: tenxbrain-0020k
         name: "TENx ladder: 20k cells"
         <<: *rung
         parameters:
           - n_cells: 20000
             seed: 42
-      - id: tenx-0040k
+      - id: tenxbrain-0040k
         name: "TENx ladder: 40k cells"
         <<: *rung
         parameters:
           - n_cells: 40000
             seed: 42
-      - id: tenx-0080k
+      - id: tenxbrain-0080k
         name: "TENx ladder: 80k cells"
         <<: *rung
         parameters:
           - n_cells: 80000
             seed: 42
-      - id: tenx-0160k
+      - id: tenxbrain-0160k
         name: "TENx ladder: 160k cells"
         <<: *rung
         parameters:
           - n_cells: 160000
             seed: 42
-      - id: tenx-0320k
+      - id: tenxbrain-0320k
         name: "TENx ladder: 320k cells"
         <<: *rung
         parameters:
           - n_cells: 320000
             seed: 42
-      - id: tenx-0640k
+      - id: tenxbrain-0640k
         name: "TENx ladder: 640k cells"
         <<: *rung
         parameters:
           - n_cells: 640000
             seed: 42
-      # 640k is the last R-readable rung: at 1.31M cells nnz is 2.62e9, past
+      # 640k is the last R-readable rung in memroy: at 1.31M cells nnz is 2.62e9, past
       # the 2^31 that R's integers hold. anndataR reads the int64 indptr,
-      # overflows it to NA, and drops layers/counts with only a warning -- the
-      # AnnData comes back with no counts at all rather than failing outright.
-      # The rung itself is fine; consuming it needs an all-python/GPU upstream.
-      - id: tenx-1306k
+      # overflows it to NA, and drops layers/counts with only a warning. Use python
+      # or a disk-backed matrix.
+      - id: tenxbrain-1306k
         name: "TENx ladder: 1.31M cells (whole dataset)"
         <<: *rung
         parameters:

@@ -192,7 +192,7 @@ def main(argv=None):
     p.add_argument("--output_dir", required=True)
     p.add_argument("--name", required=True,
                    help="stem for every emitted file (api 0.5: the module id)")
-    p.add_argument("--tenx_raw_h5", required=True,
+    p.add_argument("--tenxbrain_raw_h5", required=True,
                    help="raw 10x HDF5 from the omni-data stage")
     p.add_argument("--n_cells", type=int, required=True,
                    help="rung size; >= the source size means 'every cell'")
@@ -202,7 +202,7 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     stem = f"{args.output_dir}/{args.name}"
-    with h5py.File(args.tenx_raw_h5, "r") as f:
+    with h5py.File(args.tenxbrain_raw_h5, "r") as f:
         mm = list(f)[0]
         obs = read_obs(f, mm, args.group_col)
         print(f"source: {len(obs)} cells x {int(f[f'{mm}/shape'][0])} genes, "

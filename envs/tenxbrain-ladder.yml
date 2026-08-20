@@ -1,4 +1,4 @@
-name: tenx-ladder
+name: tenxbrain-ladder
 channels:
 - conda-forge
 - nodefaults

@@ -13,10 +13,10 @@ LADDER   run.py     --scsampler draw + streaming gather--> one rung per module
 Each rung is a publishable DATA directory:
 
 ```
-tenx-0020k.h5ad                 counts in layers/counts (CSR, f32), no X,
-tenx-0020k.clusters_truth.tsv   flat string obs columns
-tenx-0020k.clusters_truth_num.txt
-tenx-0020k_properties.yaml
+tenxbrain-0020k.h5ad                 counts in layers/counts (CSR, f32), no X,
+tenxbrain-0020k.clusters_truth.tsv   flat string obs columns
+tenxbrain-0020k.clusters_truth_num.txt
+tenxbrain-0020k_properties.yaml
 ```
 
 ## Why a ladder
@@ -53,8 +53,8 @@ Publish it by copying the four files out — the glob leaves ob's own
 `file://` copy would otherwise drop into the consumer's DATA directory:
 
 ```sh
-mkdir -p ~/phd/data/tenx_ladder/tenx-0020k
-cp out/**/LADDER/tenx-0020k/.*/tenxbrain/tenx-0020k.* ~/phd/data/tenx_ladder/tenx-0020k/
+mkdir -p ~/phd/data/tenxbrain_ladder/tenxbrain-0020k
+cp out/**/LADDER/tenxbrain-0020k/.*/tenxbrain/tenxbrain-0020k.* ~/phd/data/tenxbrain_ladder/tenxbrain-0020k/
 ```
 
 Then point a downstream DATA stage at that directory, using the rung id as the
@@ -62,13 +62,13 @@ module id — omni-data copies a directory's files verbatim, so the stems must
 match it:
 
 ```yaml
-- id: tenx-0020k
+- id: tenxbrain-0020k
   software_environment: omni_data
   repository:
     url: https://github.com/btraven00/omni-data
     commit: eb4d368b5e83b26389e6047dd8bad6badede78f8
   parameters:
-    - uri: file:///home/b/phd/data/tenx_ladder/tenx-0020k
+    - uri: file:///home/b/phd/data/tenxbrain_ladder/tenxbrain-0020k
 ```
 
 ## Caveats
@@ -76,12 +76,3 @@ match it:
 - **No cell-type labels exist for this dataset.** The truth files are emitted
   header-only on purpose — enough for the stage contract, useless as a label
   source. Any metric stage that consumes them is invalid downstream of here.
-- 640k is the last **R**-readable rung: at 1.31M cells nnz passes 2^31, and
-  anndataR silently drops `layers/counts` rather than failing.
-- The rung outputs put `{dataset}` in a *directory* rather than the filename,
-  which is what keeps the stems equal to the rung ids. ob warns that paths
-  containing `/` are deprecated; if that goes away, the rungs become
-  `tenxbrain.tenx-0020k.*` and consumers have to follow.
-- The rung modules point at a local checkout in `benchmark.yaml`; swap to the
-  GitHub URL and pin a commit before publishing. Same for the scsampler pin in
-  `envs/tenx-ladder.yml`.
