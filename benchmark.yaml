@@ -80,13 +80,13 @@ stages:
     # publishes, stemmed by the rung id.
     outputs:
       - id: rawdata_h5ad
-        path: "{dataset}/{module}.h5ad"
+        path: "{dataset}/{module.id}.h5ad"
       - id: rawdata_clusters_truth
-        path: "{dataset}/{module}.clusters_truth.tsv"
+        path: "{dataset}/{module.id}.clusters_truth.tsv"
       - id: rawdata_clusters_truth_num
-        path: "{dataset}/{module}.clusters_truth_num.txt"
+        path: "{dataset}/{module.id}.clusters_truth_num.txt"
       - id: properties_info
-        path: "{dataset}/{module}_properties.yaml"
+        path: "{dataset}/{module.id}_properties.yaml"
     modules:
       # One module per rung rather than one module with an n_cells sweep: the
       # module id becomes the published file stem, and a param-hash directory

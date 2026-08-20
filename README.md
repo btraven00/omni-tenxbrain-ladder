@@ -42,9 +42,24 @@ Peak RAM is bounded by `SPAN` (~200MB of source data+indices), not by rung size.
 
 ## Consuming a rung
 
-Rungs land in `<out>/tenxbrain/RAW/tenxbrain/<hash>/LADDER/<rung>/<hash>/tenxbrain/`.
-Point a downstream DATA stage at that directory with omni-data, using the rung
-id as the module id (the file stems must match it):
+A rung lands in
+
+```
+out/RAW/tenxbrain/.<hash>/LADDER/<rung>/.<hash>/tenxbrain/<rung>.{h5ad,clusters_truth.tsv,…}
+```
+
+Publish it by copying the four files out — the glob leaves ob's own
+`parameters.json` / `performance.txt` behind, which a downstream omni-data
+`file://` copy would otherwise drop into the consumer's DATA directory:
+
+```sh
+mkdir -p ~/phd/data/tenx_ladder/tenx-0020k
+cp out/**/LADDER/tenx-0020k/.*/tenxbrain/tenx-0020k.* ~/phd/data/tenx_ladder/tenx-0020k/
+```
+
+Then point a downstream DATA stage at that directory, using the rung id as the
+module id — omni-data copies a directory's files verbatim, so the stems must
+match it:
 
 ```yaml
 - id: tenx-0020k
@@ -53,7 +68,7 @@ id as the module id (the file stems must match it):
     url: https://github.com/btraven00/omni-data
     commit: eb4d368b5e83b26389e6047dd8bad6badede78f8
   parameters:
-    - uri: file:///…/LADDER/tenx-0020k/<hash>/tenxbrain
+    - uri: file:///home/b/phd/data/tenx_ladder/tenx-0020k
 ```
 
 ## Caveats
@@ -63,6 +78,10 @@ id as the module id (the file stems must match it):
   source. Any metric stage that consumes them is invalid downstream of here.
 - 640k is the last **R**-readable rung: at 1.31M cells nnz passes 2^31, and
   anndataR silently drops `layers/counts` rather than failing.
+- The rung outputs put `{dataset}` in a *directory* rather than the filename,
+  which is what keeps the stems equal to the rung ids. ob warns that paths
+  containing `/` are deprecated; if that goes away, the rungs become
+  `tenxbrain.tenx-0020k.*` and consumers have to follow.
 - The rung modules point at a local checkout in `benchmark.yaml`; swap to the
   GitHub URL and pin a commit before publishing. Same for the scsampler pin in
   `envs/tenx-ladder.yml`.
