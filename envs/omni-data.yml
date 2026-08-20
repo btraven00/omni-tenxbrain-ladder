@@ -1,0 +1,8 @@
+name: omni-data
+channels:
+- https://prefix.dev/almost-conductor
+- conda-forge
+- nodefaults
+dependencies:
+- hapiq *
+- bash *

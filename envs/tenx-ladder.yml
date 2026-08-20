@@ -1,0 +1,19 @@
+name: tenx-ladder
+channels:
+- conda-forge
+- nodefaults
+dependencies:
+- python >=3.11
+- h5py >=3.10
+- numpy >=1.26
+- pandas >=2.1
+- pip
+- pip:
+  # Only the *selection* comes from scsampler (sample.proportional). It is a
+  # pure numpy/pandas call on obs, so none of scsampler's heavy extras
+  # (anndata, cellxgene-census) are pulled in.
+  #
+  # TODO: pin a commit before publishing -- the per-group RNG contract is what
+  # makes the rungs nested, so it must not drift under the ladder. Needs the
+  # pyproject.toml (packaging metadata) pushed to omni-scsampler first.
+  - scsampler @ git+https://github.com/btraven00/omni-scsampler@main
